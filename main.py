@@ -5,12 +5,9 @@ import datetime
 import os
 from tkinter import messagebox
 import sqlite3
-from ttkbootstrap import Style
-import ttkbootstrap as tb
 
 from numpy import loadtxt
 lines = loadtxt("item_stock.txt", dtype=str, usecols=0, unpack=True)
-
 
 def clear_item():
     qty_spinbox.delete(0, tk.END)
@@ -24,7 +21,7 @@ def add_item():
     qty = int(qty_spinbox.get())
     desc = desc_entry.get()
     price = float(price_spinbox.get())
-    line_total = qty*price
+    line_total = qty * price
     invoice_item = [qty, desc, price, line_total]
 
     tree.insert('', 0, values=invoice_item)
@@ -42,11 +39,11 @@ def new_invoice():
 
 def generate_invoice():
     doc = DocxTemplate("invoice_template.docx")
-    name = first_name_entry.get() + last_name_entry.get()
+    name = first_name_entry.get() + " " + last_name_entry.get()  # Add space between names
     phone = phone_entry.get()
     subtotal = sum(item[3] for item in invoice_list)
     salestax = 0.1
-    total = subtotal * (1 - salestax)
+    total = subtotal * (1 + salestax)  # Add sales tax to the subtotal
 
     doc.render({"name": name,
                 "phone": phone,
@@ -55,7 +52,7 @@ def generate_invoice():
                 "salestax": str(salestax * 100) + "%",
                 "total": total})
     
-    doc_name = os.path.join("./invoices/" + "new_invoice-" + name + datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S") + ".docx")
+    doc_name = os.path.join("./invoices/", f"new_invoice-{name}-{datetime.datetime.now().strftime('%Y-%m-%d-%H%M%S')}.docx")
     doc.save(doc_name)
 
     messagebox.showinfo("Invoice Generation", "Invoice Complete")
@@ -107,43 +104,42 @@ def refresh_invoice_listbox():
 window = tk.Tk()
 window.title("Invoice Generator Form")
 
-style = Style(theme="darkly")
 
 frame = tk.Frame(window)
 frame.pack(padx=20, pady=10, fill=tk.BOTH, expand=True)
 
 # Invoice Data Entry
-first_name_label = tb.Label(frame, text="First Name")
-last_name_label = tb.Label(frame, text="Last Name")
+first_name_label = tk.Label(frame, text="First Name")
+last_name_label = tk.Label(frame, text="Last Name")
 first_name_label.grid(row=0, column=0)
 last_name_label.grid(row=0, column=1)
 
-first_name_entry = tb.Entry(frame)
-last_name_entry = tb.Entry(frame)
+first_name_entry = tk.Entry(frame)
+last_name_entry = tk.Entry(frame)
 first_name_entry.grid(row=1, column=0)
 last_name_entry.grid(row=1, column=1)
 
-phone_label = tb.Label(frame, text="Phone")
+phone_label = tk.Label(frame, text="Phone")
 phone_label.grid(row=0, column=2)
-phone_entry = tb.Entry(frame)
+phone_entry = tk.Entry(frame)
 phone_entry.grid(row=1, column=2)
 
-qty_label = tb.Label(frame, text="Qty")
+qty_label = tk.Label(frame, text="Qty")
 qty_label.grid(row=2, column=0)
-qty_spinbox = tb.Spinbox(frame, from_=1, to=100)
+qty_spinbox = tk.Spinbox(frame, from_=1, to=100)
 qty_spinbox.grid(row=3, column=0)
 
-desc_label = tb.Label(frame, text="Description")
+desc_label = tk.Label(frame, text="Description")
 desc_label.grid(row=2, column=1)
 desc_entry = ttk.Combobox(frame, values=list(map(str, lines)))
 desc_entry.grid(row=3, column=1)
 
-price_label = tb.Label(frame, text="Unit Price")
+price_label = tk.Label(frame, text="Unit Price")
 price_label.grid(row=2, column=2)
-price_spinbox = tb.Spinbox(frame, from_=0.0, to=500, increment=0.5)
+price_spinbox = tk.Spinbox(frame, from_=0.0, to=500, increment=0.5)
 price_spinbox.grid(row=3, column=2)
 
-add_item_button = tb.Button(frame, text="Add Item", command=add_item, bootstyle="info", cursor="hand2")
+add_item_button = tk.Button(frame, text="Add Item", command=add_item, cursor="hand2")
 add_item_button.grid(row=4, column=2, pady=5)
 
 # Treeview for items
@@ -155,10 +151,10 @@ tree.heading('price', text="Unit Price")
 tree.heading('total', text="Total")
 tree.grid(row=5, column=0, columnspan=3, padx=20, pady=10)
 
-save_invoice_button = tb.Button(frame, text="Generate Invoice", command=generate_invoice, bootstyle="info", cursor="hand2")
+save_invoice_button = tk.Button(frame, text="Generate Invoice", command=generate_invoice, cursor="hand2")
 save_invoice_button.grid(row=6, column=0, columnspan=3, sticky="news", padx=20, pady=5)
 
-new_invoice_button = tb.Button(frame, text="New Invoice", command=new_invoice, bootstyle="info", cursor="hand2")
+new_invoice_button = tk.Button(frame, text="New Invoice", command=new_invoice, cursor="hand2")
 new_invoice_button.grid(row=7, column=0, columnspan=3, sticky="news", padx=20, pady=5)
 
 # Right side - LabelFrame for displaying previous invoices
